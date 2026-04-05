@@ -21,11 +21,13 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*'
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'WAMDEVIN backend is running' });
+  res.send('WAMDIN Alumni API is running...');
 });
 
 app.get('/health', (req, res) => {
