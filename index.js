@@ -1,48 +1,38 @@
-// Admin routes
-const adminRoutes = require('./routes/adminRoutes');
-app.use('/api/admin', adminRoutes);
-// Resource routes
-const resourceRoutes = require('./routes/resourceRoutes');
-app.use('/api/resources', resourceRoutes);
-// Event routes
-const eventRoutes = require('./routes/eventRoutes');
-app.use('/api/events', eventRoutes);
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const resourceRoutes = require('./routes/resourceRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const groupRoutes = require('./routes/groupRoutes');
+const socketHandler = require('./socket');
+const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-
-
-// Auth routes
-const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
-
-
-// User profile routes
-const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
-
-// Messaging routes
-const messageRoutes = require('./routes/messageRoutes');
+app.use('/api/admin', adminRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/messages', messageRoutes);
-
-// Group routes
-const groupRoutes = require('./routes/groupRoutes');
 app.use('/api/groups', groupRoutes);
 
-
-const http = require('http');
-const { Server } = require('socket.io');
-const socketHandler = require('./socket');
-
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+app.use(errorHandler);
 socketHandler(io);
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
