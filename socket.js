@@ -9,7 +9,9 @@ function socketHandler(io) {
     if (!token) return next(new Error('No token'));
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.user = await User.findById(decoded.userId);
+      const userId = decoded.userId || decoded.id;
+      socket.user = await User.findById(userId);
+      if (!socket.user) return next(new Error('Invalid token'));
       next();
     } catch (err) {
       next(new Error('Invalid token'));
