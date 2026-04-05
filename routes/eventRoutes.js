@@ -1,13 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const eventController = require('../controllers/eventController');
-const auth = require('../middleware/auth');
+const Event = require('../models/Event');
+const { protect } = require('../middleware/authMiddleware');
 
-router.post('/', auth, eventController.createEvent);
-router.get('/', eventController.getEvents);
-router.get('/:id', eventController.getEvent);
-router.put('/:id', auth, eventController.updateEvent);
-router.delete('/:id', auth, eventController.deleteEvent);
-router.post('/:id/register', auth, eventController.registerEvent);
+// Create Event
+router.post('/', protect, async (req, res) => {
+	const event = await Event.create(req.body);
+	res.json(event);
+});
+
+// Get All Events
+router.get('/', protect, async (req, res) => {
+	const events = await Event.find();
+	res.json(events);
+});
+
+// Register for Event
+router.post('/:id/register', protect, async (req, res) => {
+	const event = await Event.findById(req.params.id);
+	event.registrationList.push(req.user._id);
+	await event.save();
+	res.json({ message: 'Registered successfully' });
+});
 
 module.exports = router;
