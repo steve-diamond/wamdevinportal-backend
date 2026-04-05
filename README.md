@@ -50,8 +50,16 @@ npm start
 ```
 
 ## Available Scripts
-- `npm start`: runs `server.js`
-- `npm run dev`: runs `nodemon server.js`
+- `npm start`: runs `index.js`
+- `npm run dev`: runs `nodemon index.js`
+
+## Production Domain Setup
+Set these values in your production environment:
+- `CLIENT_URL=https://www.wamdevin.com`
+- `CLIENT_URLS=https://www.wamdevin.com,https://wamdevin.com`
+
+Recommended backend domain:
+- `https://api.wamdevin.com`
 
 ## Base API Routes
 - `/api/auth`

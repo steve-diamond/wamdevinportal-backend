@@ -18,11 +18,40 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = (process.env.CLIENT_URLS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const defaultOrigins = [
+  'http://localhost:3000',
+  'https://wamdevin.com',
+  'https://www.wamdevin.com'
+];
+
+const corsOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  return corsOrigins.includes(origin);
+};
+
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by Socket.IO CORS'));
+    }
+  }
+});
+
 app.use(cors({
-  origin: '*'
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  }
 }));
 app.use(express.json());
 
