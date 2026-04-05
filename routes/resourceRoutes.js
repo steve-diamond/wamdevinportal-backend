@@ -9,6 +9,15 @@ const upload = require('../utils/fileUploader');
 const localUpload = multer();
 
 router.post('/upload', protect, upload.single('file'), async (req, res) => {
+	const bucket = process.env.AWS_S3_BUCKET || process.env.AWS_BUCKET_NAME;
+	if (!bucket) {
+		return res.status(503).json({ message: 'S3 upload is not configured on this server' });
+	}
+
+	if (!req.file || !req.file.location) {
+		return res.status(400).json({ message: 'No uploaded S3 file found in request' });
+	}
+
 	const resource = await Resource.create({
 		title: req.body.title,
 		description: req.body.description,
