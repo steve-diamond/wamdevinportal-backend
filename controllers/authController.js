@@ -13,8 +13,10 @@ exports.signup = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, salt);
 
     const user = await User.create({ fullName, email, passwordHash });
-    // Send email verification (stub for now)
-    sendVerificationEmail(user.email);
+    // Send email verification — non-blocking, don't fail signup if email errors
+    sendVerificationEmail(user.email).catch(err =>
+      console.warn('[authController] Verification email failed:', err.message)
+    );
     res.status(201).json({ message: 'User created successfully', user });
   } catch (error) {
     res.status(500).json({ message: error.message });
