@@ -17,7 +17,8 @@ exports.signup = async (req, res) => {
     sendVerificationEmail(user.email).catch(err =>
       console.warn('[authController] Verification email failed:', err.message)
     );
-    res.status(201).json({ message: 'User created successfully', user });
+    const { passwordHash: _ph2, __v, ...safeUser2 } = user.toObject();
+    res.status(201).json({ message: 'User created successfully', user: safeUser2 });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -33,7 +34,8 @@ exports.login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(200).json({ token, user });
+    const { passwordHash: _ph, __v, ...safeUser } = user.toObject();
+    res.status(200).json({ token, user: safeUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

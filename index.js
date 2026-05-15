@@ -86,19 +86,14 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-const connectWithRetry = (attempt = 1, maxAttempts = 5) => {
+const connectWithRetry = (attempt = 1) => {
   mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch((err) => {
       console.error(`MongoDB connection error (attempt ${attempt}):`, err.message);
-      if (attempt < maxAttempts) {
-        const delay = Math.min(1000 * 2 ** attempt, 30000);
-        console.log(`Retrying in ${delay / 1000}s...`);
-        setTimeout(() => connectWithRetry(attempt + 1, maxAttempts), delay);
-      } else {
-        console.error('Max connection attempts reached. Exiting.');
-        process.exit(1);
-      }
+      const delay = Math.min(1000 * 2 ** attempt, 30000);
+      console.log(`Retrying in ${delay / 1000}s...`);
+      setTimeout(() => connectWithRetry(attempt + 1), delay);
     });
 };
 
