@@ -28,7 +28,8 @@ const allowedOrigins = (process.env.CLIENT_URLS || process.env.CLIENT_URL || '')
 const defaultOrigins = [
   'http://localhost:3000',
   'https://wamdevin.com',
-  'https://www.wamdevin.com'
+  'https://www.wamdevin.com',
+  'https://wamdevinportal-frontend.vercel.app'
 ];
 
 const corsOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
