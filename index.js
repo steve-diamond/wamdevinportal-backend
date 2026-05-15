@@ -74,10 +74,32 @@ app.use('/api/groups', groupRoutes);
 app.use(errorHandler);
 socketHandler(io);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+// Start HTTP server immediately so Render detects the open port
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Connect to MongoDB with retry logic
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error('FATAL: MONGO_URI environment variable is not set. Set it in Render → Environment.');
+  process.exit(1);
+}
+
+const connectWithRetry = (attempt = 1, maxAttempts = 5) => {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => {
+      console.error(`MongoDB connection error (attempt ${attempt}):`, err.message);
+      if (attempt < maxAttempts) {
+        const delay = Math.min(1000 * 2 ** attempt, 30000);
+        console.log(`Retrying in ${delay / 1000}s...`);
+        setTimeout(() => connectWithRetry(attempt + 1, maxAttempts), delay);
+      } else {
+        console.error('Max connection attempts reached. Exiting.');
+        process.exit(1);
+      }
     });
-  })
-  .catch((err) => console.error('MongoDB connection error:', err));
+};
+
+connectWithRetry();
