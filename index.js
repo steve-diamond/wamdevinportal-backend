@@ -62,10 +62,17 @@ app.get('/', (req, res) => {
 
 app.get('/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
-  // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
   const dbStatus = ['disconnected', 'connected', 'connecting', 'disconnecting'][dbState] || 'unknown';
-  const ok = dbState === 1;
-  res.status(ok ? 200 : 503).json({ status: ok ? 'ok' : 'degraded', db: dbStatus });
+  // Always 200 so Render does not restart the process — db status is in the body
+  res.status(200).json({ status: 'ok', db: dbStatus });
+});
+
+// Reject API requests immediately when MongoDB is not ready
+app.use('/api', (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ message: 'Database unavailable. Please try again in a moment.' });
+  }
+  next();
 });
 
 app.use('/api/auth', authRoutes);
